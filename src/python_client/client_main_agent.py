@@ -5,11 +5,8 @@ from minimax import MinimaxAgent
 
 class Agent(BaseAgent):
     def do_turn(self) -> Action:
-        path = []
         minimax = MinimaxAgent(self.grid_height, self.grid_width, ['W', 'R', 'Y', 'G'])
-        state = [self.grid, path]
-        print(self.grid)
-        return minimax.get_action(state)
+        return minimax.get_action(self.grid)
 
 
 if __name__ == '__main__':

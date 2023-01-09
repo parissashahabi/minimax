@@ -2,8 +2,7 @@ import random
 from base import Action
 
 
-def evaluation_function(current_game_state):  # TODO
-    # print(current_game_state[1])
+def evaluation_function(current_game_state): # TODO
     values = [value for value in range(20)]
     return random.choice(values)
 
@@ -37,25 +36,24 @@ class MinimaxAgent:
         self.width = width
         self.height = height
         self.depth = depth
-        self.path = []
 
     def minimax(self, agent, depth, game_state):
-        if self.is_terminated(game_state[0]) or depth == self.depth:
+        if self.is_terminated(game_state) or depth == self.depth:
             return evaluation_function(game_state)
         if agent == 'A':  # maximize for agent
-            # self.path.append(self.get_agent_type())
-            return min(self.minimax('B', depth, self.generate_successor(game_state, agent, action)) for action in
-                       self.get_legal_actions('B', game_state[0]))
-        elif agent == 'B':
-            depth += 1
-            return max(self.minimax('A', depth, self.generate_successor(game_state, agent, action)) for action in
-                       self.get_legal_actions('A', game_state[0]))
+            return max(self.minimax('B', depth, self.generate_successor(game_state, agent, action)) for action in
+                       self.get_legal_actions('A', game_state))
+        else:
+            next_agent = agent
+            if next_agent == 'B':
+                next_agent = 'A'
+            if next_agent == 'A':
+                depth += 1
+            return min(self.minimax(next_agent, depth, self.generate_successor(game_state, agent, action)) for action in
+                       self.get_legal_actions(agent, game_state))
 
     def get_action(self, game_state):
-        # print(f'game state:\n{game_state}\n')
-        # print(f'game state[0]:\n{game_state[0]}\n')
-        # print(f'game state[1]:\n{game_state[1]}\n')
-        possible_actions = self.get_legal_actions('A', game_state[0])
+        possible_actions = self.get_legal_actions('A', game_state)
         action_scores = [self.minimax('A', 0, self.generate_successor(game_state, 'A', action)) for action
                          in possible_actions]
         max_action = max(action_scores)
@@ -74,12 +72,6 @@ class MinimaxAgent:
                 if agent in game_state[x][y]:
                     return x, y
 
-    def get_agent_type(self, agent, game_state):
-        for x in range(self.height):
-            for y in range(self.width):
-                if agent in game_state[x][y]:
-                    return game_state[x][y]
-
     def get_legal_actions(self, agent, game_state):
         legal_actions = []
         x, y = self.get_agent_location(agent, game_state)
@@ -91,23 +83,20 @@ class MinimaxAgent:
         return legal_actions
 
     def generate_successor(self, game_state, agent, action):
-        grid = game_state[0]
-        successor_state = grid
-        x, y = self.get_agent_location(agent, grid)
+        successor_state = game_state
+        x, y = self.get_agent_location(agent, game_state)
         adj_x = x + self.dRow[action]
         adj_y = y + self.dCol[action]
-        if self.is_valid(adj_x, adj_y) and not grid[adj_x][adj_y] in ['W']:
-            adj_type = grid[adj_x][adj_y]
-            if 'A' not in adj_type or 'B' not in adj_type:
-                game_state[1].append(adj_type)
-                if adj_type in ['1', '2', '3', '4', 'r', 'g', 'y']:
-                    successor_state[adj_x][adj_y] = 'E' + agent
-                else:
-                    successor_state[adj_x][adj_y] = successor_state[adj_x][adj_y] + agent
-            else:
+        if self.is_valid(adj_x, adj_y) and not game_state[adj_x][adj_y] in ['W']:
+            adj_type = game_state[adj_x][adj_y]
+            if 'A' in adj_type or 'B' in adj_type:
                 return successor_state
+            elif adj_type in ['1', '2', '3', '4', 'r', 'g', 'y']:
+                successor_state[adj_x][adj_y] = 'E' + agent
+            else:
+                successor_state[adj_x][adj_y] = successor_state[adj_x][adj_y] + agent
             successor_state[x][y] = successor_state[x][y].replace(agent, '')
         return successor_state
 
-    def is_terminated(self, game_state):  # TODO
+    def is_terminated(self, game_state): # TODO
         pass
